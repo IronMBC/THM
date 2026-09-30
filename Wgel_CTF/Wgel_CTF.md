@@ -11,7 +11,7 @@
 
 - Scan performed:
 
- ```bash 
+```bash 
 	nmap -sV -sC -oN nmap.txt TARGET_IP
  ```
 - Open Ports: 
@@ -26,13 +26,13 @@
 And I did - /sitemap/.ssh
 - I visited the endpointed to find an id_rsa file and everything went smooth sail from there
 - I quickly saved it on my computer using
-  ```bash
-   wget http://TARGET_IP/sitemap/.ssh/id_rsa
-    ```
+```bash
+wget http://TARGET_IP/sitemap/.ssh/id_rsa
+```
    and then ran this command
-  ```bash
-   chmod 400 id_rsa
-  ```
+```bash
+	chmod 400 id_rsa
+```
 This is to make the id_rsa file acceptable by ssh by securing the read and permissions to only you.
 
 Using this new found knowledge I went back to the other dude that was discovered by nmap
